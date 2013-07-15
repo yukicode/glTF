@@ -102,6 +102,14 @@ header h2 {
   margin-bottom: 40px;
 }
 
+h1#logo {
+    background: url('../images/glTF_200.png') 0 0 no-repeat;
+    display: block;
+    width: 200px;
+    height: 117px;
+    text-indent: -9999em;
+}
+
 a.button {
   -moz-border-radius: 30px;
   -webkit-border-radius: 30px;                     
