@@ -57,9 +57,9 @@ THREE.glTFShader = function(material, params, object, scene) {
 // bindParameters - connect the uniform values to their source parameters
 THREE.glTFShader.prototype.bindParameters = function(scene) {
 
-	function findObject(o, param) { 
+	function findObject(o, p) { 
 		if (o.glTFID == param.node) {
-			param.sourceObject = o;
+			p.sourceObject = o;
 		}
 	}
 
@@ -68,15 +68,19 @@ THREE.glTFShader.prototype.bindParameters = function(scene) {
 		var param = this.parameters[pname];
 		if (param.semantic) {
 
+			var p = { 
+				semantic : param.semantic,
+				uniform: this.material.uniforms[uniform] 
+			};
+
 			if (param.node) {
-				scene.traverse(function(o) { findObject(o, param)});
+				scene.traverse(function(o) { findObject(o, p)});
 			}
 			else {
-				param.sourceObject = this.object;
+				p.sourceObject = this.object;
 			}			
 
-			param.uniform = this.material.uniforms[uniform];
-			this.semantics[pname] = param;
+			this.semantics[pname] = p;
 
 		}
 	}
@@ -86,9 +90,17 @@ THREE.glTFShader.prototype.bindParameters = function(scene) {
 // Update - update all the uniform values
 THREE.glTFShader.prototype.update = function(scene, camera) {
 
+	// update scene graph
+
+	scene.updateMatrixWorld();
+
+	// update camera matrices and frustum
+	camera.updateMatrixWorld();
+	camera.matrixWorldInverse.getInverse( camera.matrixWorld );
+
 	for (var sname in this.semantics) {
 		var semantic = this.semantics[sname];
-        if (semantic && semantic.sourceObject) {
+        if (semantic) {
 	        switch (semantic.semantic) {
 	            case "MODELVIEW" :
 	            	var m4 = semantic.uniform.value;
@@ -125,7 +137,7 @@ THREE.glTFShader.prototype.update = function(scene, camera) {
 	                break;
 
 	            default :
-	                //console.log("Unhandled shader semantic", semantic)
+	                throw new Error("Unhandled shader semantic" + semantic);
 	                break;
 	        }
         }
